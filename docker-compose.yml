@@ -1,0 +1,109 @@
+version: "3.0"
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.0
+    container_name: es-container-cp
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    networks:
+      - es-net
+    ports:
+      - 9200:9200
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+  redis:
+    image: redis:alpine
+    container_name: redis-container-cp
+    ports:
+      - "6379:6379"
+    networks:
+      - es-net
+    volumes:
+      - redisdata:/data
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.1.1
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    volumes:
+      - zookeeperdata:/var/lib/zookeeper
+
+  kafka:
+    image: confluentinc/cp-kafka:6.1.1
+    depends_on:
+      - zookeeper
+    ports:
+      - '9092:9092'
+    expose:
+      - '29092'
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
+      KAFKA_MIN_INSYNC_REPLICAS: '1'
+    volumes:
+      - kafkadata:/var/lib/kafka/data
+  postgres:
+    image: postgres:alpine
+    container_name: postgres-container-cp
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: sms
+    volumes:
+      - pgdata1:/var/lib/postgresql/data
+    networks:
+      - es-net
+    ports:
+      - "5432:5432"
+
+  init-kafka:
+    image: confluentinc/cp-kafka:6.1.1
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server kafka:29092 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic my-topic-1 --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic my-topic-2 --replication-factor 1 --partitions 1
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka:29092 --list
+      "
+
+  gogin:
+    build: ./app
+    container_name: gogin-container
+    networks:
+      - es-net
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      - elasticsearch
+      - redis
+      - postgres
+      - kafka
+
+networks:
+  es-net:
+    driver: bridge
+
+volumes:
+  esdata:
+  redisdata:
+  zookeeperdata:
+  zookeeperdatalog:
+  kafkadata:
+  pgdata1:

@@ -1,0 +1,345 @@
+definitions:
+  entity.Server:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      ipv4:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handlers.AddUserInput:
+    properties:
+      password:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - role
+    - username
+    type: object
+  handlers.LoginInput:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  helper.Response:
+    properties:
+      data: {}
+      errors: {}
+      message:
+        type: string
+      status:
+        type: boolean
+      token:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/server/:
+    post:
+      consumes:
+      - application/json
+      description: Create new server with provided information
+      parameters:
+      - description: Add server
+        in: body
+        name: server
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Server'
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+      summary: Create new server
+      tags:
+      - Server CRUD
+  /api/server/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete server by id
+      parameters:
+      - description: Server ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+      summary: Delete server
+      tags:
+      - Server CRUD
+    get:
+      consumes:
+      - application/json
+      description: Get server by id
+      parameters:
+      - description: Server ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+      summary: Get server by id
+      tags:
+      - Server CRUD
+    put:
+      consumes:
+      - application/json
+      description: Update server by id
+      parameters:
+      - description: Server ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update server
+        in: body
+        name: server
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Server'
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+      summary: Update server
+      tags:
+      - Server CRUD
+  /api/servers:
+    get:
+      consumes:
+      - application/json
+      description: View or export servers based on url query
+      parameters:
+      - description: From
+        in: query
+        name: from
+        type: integer
+      - description: To
+        in: query
+        name: to
+        type: integer
+      - description: Account Per Page
+        in: query
+        name: perpage
+        type: integer
+      - description: Sort By
+        in: query
+        name: sortby
+        type: string
+      - description: Order
+        in: query
+        name: order
+        type: string
+      - description: Filter
+        in: query
+        name: filter
+        type: string
+      - description: Export
+        in: query
+        name: export
+        type: string
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+      summary: Export servers
+      tags:
+      - Server CRUD
+    post:
+      consumes:
+      - application/json
+      description: Import servers from excel file
+      parameters:
+      - description: Excel file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+      summary: Import servers
+      tags:
+      - Server CRUD
+  /api/servers/report:
+    get:
+      consumes:
+      - application/json
+      description: Report server information
+      parameters:
+      - description: Time
+        in: query
+        name: time
+        type: integer
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+      summary: Report server information intentionally
+      tags:
+      - Server CRUD
+  /api/user:
+    post:
+      consumes:
+      - application/json
+      description: Add user
+      parameters:
+      - description: Add user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AddUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+      summary: Add user
+      tags:
+      - User CRUD
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login
+      parameters:
+      - description: Login
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+      summary: Login
+      tags:
+      - Auth
+swagger: "2.0"
